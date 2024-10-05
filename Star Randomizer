@@ -1,0 +1,67 @@
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.colors import LinearSegmentedColormap
+
+def generate_mock_data(num_stars=100):
+    np.random.seed(42)  # For reproducibility
+    return {
+        'source_id': np.arange(num_stars),
+        'ra': np.random.uniform(0, 360, num_stars),
+        'dec': np.random.uniform(-90, 90, num_stars),
+        'bp_rp': np.random.uniform(-0.5, 2, num_stars),
+        'phot_g_mean_mag': np.random.uniform(3, 6, num_stars),
+    }
+
+def mock_process_spectra(num_stars=100, num_wavelengths=600):
+    # Generate mock spectral data
+    return np.random.rand(num_stars, num_wavelengths)
+
+def calculate_color_temperature(spectra):
+    blue_flux = np.mean(spectra[:, 100:150], axis=1)  # ~400-450 nm
+    red_flux = np.mean(spectra[:, 450:500], axis=1)   # ~750-800 nm
+    return blue_flux / red_flux
+
+def galactic_coordinates(ra, dec):
+    # Simple approximation of equatorial to galactic coordinate conversion
+    # Note: This is a crude approximation and not accurate for real use
+    l = (ra + 123.932) % 360
+    b = dec
+    return l, b
+
+def create_starmap(stars, spectra):
+    fig, ax = plt.subplots(figsize=(15, 12), facecolor='black')
+    ax.set_facecolor('black')
+    
+    colors = ['blue', 'white', 'yellow', 'orange', 'red']
+    cmap = LinearSegmentedColormap.from_list('star_cmap', colors, N=100)
+    
+    l, b = galactic_coordinates(stars['ra'], stars['dec'])
+    
+    sizes = 50 * 10**(-stars['phot_g_mean_mag']/5)
+    color_temp = calculate_color_temperature(spectra)
+    
+    scatter = ax.scatter(l, b, s=sizes, c=color_temp, cmap=cmap, 
+                         norm=plt.Normalize(vmin=0.5, vmax=1.5),
+                         edgecolors='none', alpha=0.8)
+    
+    ax.set_xlabel('Galactic Longitude', color='white')
+    ax.set_ylabel('Galactic Latitude', color='white')
+    ax.set_title(f'Simulated Star Map with Spectral Data ({len(stars)} Stars)', color='white')
+
+    ax.set_xlim(360, 0)
+    ax.set_ylim(-90, 90)
+
+    cbar = plt.colorbar(scatter)
+    cbar.set_label('Color Temperature (Blue/Red Flux Ratio)', color='white')
+    cbar.ax.yaxis.set_tick_params(color='white')
+    plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='white')
+
+    plt.grid(color='gray', linestyle=':', alpha=0.3)
+    plt.tight_layout()
+    plt.show()
+
+# Main execution
+num_stars = 100
+stars = generate_mock_data(num_stars)
+spectra = mock_process_spectra(num_stars)
+create_starmap(stars, spectra)
