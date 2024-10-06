@@ -24,49 +24,72 @@ def query_gaia_exoplanets(limit):
 # Calcular la temperatura de color
 def calculate_color_temperature(bp_rp):
     # Relación aproximada de BP-RP con la temperatura (K)
-    return 6400 * (1 / (0.92 * bp_rp + 1.7) + 1 / (0.92 * bp_rp + 0.62))
+    return 10400 * (1 / (0.92 * bp_rp + 1.7) + 1 / (0.92 * bp_rp + 0.62))
 
 # Crear mapa estelar con colores reales
-def create_2d_starmap(stars):
-    fig, ax = plt.subplots(figsize=(12, 8), facecolor='white')
-    
-    # Usar RA y Dec directamente para las coordenadas x e y
-    x = stars['ra']
-    y = stars['dec'] 
+def kelvin_to_rgb(temperature):
+    """Convert a temperature in Kelvin to an RGB color."""
+    temperature = temperature / 100
 
-    # Tamaños y temperaturas de color de las estrellas
-    sizes = .8 * 10**(-stars['phot_g_mean_mag']/5)
+    if temperature <= 66:
+        r = 255
+    else:
+        r = 329.698727446 * ((temperature - 60) ** -0.1332047592)
+    
+    if temperature <= 66:
+        g = 99.4708025861 * np.log(temperature) - 161.1195681661
+    else:
+        g = 288.1221695283 * ((temperature - 60) ** -0.0755148492)
+    
+    if temperature >= 66:
+        b = 255
+    elif temperature <= 19:
+        b = 0
+    else:
+        b = 138.5177312231 * np.log(temperature - 10) - 305.0447927307
+
+    return np.clip([r, g, b], 0, 255) / 255
+
+def create_star_colormap():
+    """Create a custom colormap for star temperatures."""
+    temperatures = np.linspace(2000, 30000, 256)
+    colors = [kelvin_to_rgb(temp) for temp in temperatures]
+    return LinearSegmentedColormap.from_list("star_colors", colors)
+
+def create_2d_starmap(stars):
+    fig, ax = plt.subplots(figsize=(12, 8), facecolor='black')
+    
+    x = stars['ra']
+    y = stars['dec']  # Invert the declination values
+
+    sizes = 1 * 10**(-stars['phot_g_mean_mag']/5)  # Increased size factor
     temperatures = calculate_color_temperature(stars['bp_rp'])
 
-    # Normalizar temperaturas para mapear a un rango de colores
-    norm = plt.Normalize(vmin=temperatures.min(), vmax=temperatures.max())
-    cmap = plt.get_cmap('plasma')
+    norm = plt.Normalize(vmin=2000, vmax=30000)  # Set fixed range for better color representation
+    star_cmap = create_star_colormap()
 
-    scatter = ax.scatter(x, y, s=sizes, c=temperatures, cmap=cmap, norm=norm, alpha=0.8)
+    scatter = ax.scatter(x, y, s=sizes, c=temperatures, cmap=star_cmap, norm=norm, alpha=0.8)
 
-    # Configuración del fondo y ejes
     ax.set_facecolor('black')
     ax.set_xlim(0, 360)
-    ax.set_ylim(-90, 90)
+    ax.set_ylim(90, -90)  # Reverse the y-axis limits
     
-    # Etiquetas de los ejes
     ax.set_xlabel('Right Ascension (degrees)', color='white')
     ax.set_ylabel('Declination (degrees)', color='white')
     ax.tick_params(colors='white')
 
-    # Título con un exoplaneta aleatorio
     ax.set_title(f'View from Exoplanet {np.random.randint(1,5000)}', color='red')
 
-    # Añadir barra de colores para mostrar la temperatura
     cbar = plt.colorbar(scatter, ax=ax, pad=0.1)
-    cbar.set_label('Temperature (K)', color='black')
-    cbar.ax.yaxis.set_tick_params(color='black')
-    plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='black')
+    cbar.set_label('Temperature (K)', color='white')
+    cbar.ax.yaxis.set_tick_params(color='white')
+    plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='white')
 
     plt.tight_layout()
     plt.show()
 
+
 # Main execution
-stars_limit = 10000
+stars_limit = 1000000
 stars = query_gaia_exoplanets(stars_limit)
 create_2d_starmap(stars)
