@@ -1,37 +1,43 @@
 import streamlit as st
 
-# Estilos CSS personalizados
-st.markdown("""
+# Configuración del tamaño de la página (ajustable dentro del código)
+ancho = 2000  # Ancho en píxeles
+alto = 100  # Altura en porcentaje de la pantalla (0-100)
+
+# Estilos CSS personalizados con degradado en el fondo y tamaño configurable
+st.markdown(f"""
 <style>
-    /* Estilos para el título EXOSKY */
-    .titulo-exosky {
-        font-size: 80px;
-        color: #4c6eb7;
-        font-family: 'Trebuchet MS', sans-serif;
-        text-align: center;
-        margin-bottom: 0;
-    }
-    
-    /* Estilos para el subtítulo */
-    .titulo-subtitulo {
-        font-size: 30px;
-        color: #4c6eb7;
-        font-family: 'Trebuchet MS', sans-serif;
-        text-align: center;
-        margin-top: 0;
-    }
-    
-    /* Centrar el contenido de la página */
-    .stApp {
-        max-width: 800px;
+    /* Degradado de fondo entre tres colores */
+    .stApp {{
+        background: linear-gradient(to bottom, #4c6eb7, #ffffff, #000000);
+        max-width: {ancho}px;  /* Ancho configurable */
         margin: 0 auto;
         display: flex;
         flex-direction: column;
         align-items: center;
-    }
+        height: {alto}vh;  /* Altura configurable en % de la pantalla */
+    }}
 
+    /* Estilos para el título EXOSKY */
+    .titulo-exosky {{
+        font-size: 80px;
+        color: #ffffff;
+        font-family: 'Trebuchet MS', sans-serif;
+        text-align: center;
+        margin-bottom: 0;
+    }}
+    
+    /* Estilos para el subtítulo */
+    .titulo-subtitulo {{
+        font-size: 30px;
+        color: #ffffff;
+        font-family: 'Trebuchet MS', sans-serif;
+        text-align: center;
+        margin-top: 0;
+    }}
+    
     /* Estilos personalizados para el botón */
-    .stButton > button {
+    .stButton > button {{
         background-color: #4c6eb7;
         color: white;
         border: none;
@@ -45,25 +51,25 @@ st.markdown("""
         border-radius: 5px;
         transition: background-color 0.3s;
         font-weight: bold;
-    }
+    }}
 
     /* Estilo al pasar el mouse por encima del botón */
-    .stButton > button:hover {
+    .stButton > button:hover {{
         background-color: #A9A9A9;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
+    }}
 
     /* Estilo cuando se presiona el botón */
-    .stButton > button:active {
+    .stButton > button:active {{
         background-color: #3e8e41;
         transform: translateY(2px);
-    }
+    }}
 
     /* Centrar el botón */
-    div.stButton {
+    div.stButton {{
         display: flex;
         justify-content: center;
-    }
+    }}
 </style>
 """, unsafe_allow_html=True)
 
