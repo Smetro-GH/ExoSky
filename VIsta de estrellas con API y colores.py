@@ -4,6 +4,7 @@ from matplotlib.colors import LinearSegmentedColormap
 from astroquery.gaia import Gaia
 from astropy import units as u
 from astropy.coordinates import SkyCoord
+import csv
 
 # Configuración de la consulta a Gaia
 def query_gaia_exoplanets(limit):
@@ -27,6 +28,15 @@ def calculate_color_temperature(bp_rp):
     return 10400 * (1 / (0.92 * bp_rp + 1.7) + 1 / (0.92 * bp_rp + 0.62))
 
 # Crear mapa estelar con colores reales
+
+def read_exoplanet_data(file_path):
+    exoplanets = []
+    with open(file_path, 'r') as infile:
+        reader = csv.DictReader(infile)
+        for row in reader:
+            exoplanets.append(row)
+    return exoplanets
+
 def kelvin_to_rgb(temperature):
     """Convert a temperature in Kelvin to an RGB color."""
     temperature = temperature / 100
@@ -56,7 +66,7 @@ def create_star_colormap():
     colors = [kelvin_to_rgb(temp) for temp in temperatures]
     return LinearSegmentedColormap.from_list("star_colors", colors)
 
-def create_2d_starmap(stars):
+def create_2d_starmap(stars,exoplanet):
     fig, ax = plt.subplots(figsize=(12, 8), facecolor='black')
     
     x = stars['ra']
@@ -78,7 +88,7 @@ def create_2d_starmap(stars):
     ax.set_ylabel('Declination (degrees)', color='white')
     ax.tick_params(colors='white')
 
-    ax.set_title(f'View from Exoplanet {np.random.randint(1,5000)}', color='red')
+    ax.set_title(f'View from {exoplanet["pl_name"]}', color='red')
 
     cbar = plt.colorbar(scatter, ax=ax, pad=0.1)
     cbar.set_label('Temperature (K)', color='white')
@@ -90,6 +100,15 @@ def create_2d_starmap(stars):
 
 
 # Main execution
-stars_limit = 1000000
+stars_limit = 100000
 stars = query_gaia_exoplanets(stars_limit)
-create_2d_starmap(stars)
+
+# Ruta al archivo CSV de exoplanetas
+exoplanet_file_path = r'C:\Users\vmgv0\Downloads\Base de datos mango - copia.csv'
+exoplanets = read_exoplanet_data(exoplanet_file_path)
+
+# Seleccionar un exoplaneta al azar
+random_exoplanet = np.random.choice(exoplanets)
+
+# Crear el mapa estelar desde la perspectiva del exoplaneta seleccionado
+create_2d_starmap(stars, random_exoplanet)
